@@ -1,4 +1,4 @@
-clear, clc, clf %, close all
+clear, clc, clf %, close all 
 
 %{
     +z (up)
@@ -26,7 +26,7 @@ BONUS FUTURE FEATURES:
 % 21_R05 hardpoints
 
 % wheelcenter
-wc_orig     = [522.8;   614.05;	190.6]; 
+wc_orig     = [522.8;   614.05;	190.6];
 
 % outboard points (ob)
 upper       = [522.8;	517.2;	262.75];
@@ -106,20 +106,7 @@ roll_deg        = 0;
 ca5 = ib5_orig - ob5_orig;
 error = [norm(ca5(:,1)), norm(ca5(:,2)), norm(ca5(:,3)), norm(ca5(:,4)), norm(ca5(:,5))];
 
-% find plotting limits
-max_x = max([ib5_orig(1,:), ob5_orig(1,:), wc(1)]) + 10;
-min_x = min([ib5_orig(1,:), ob5_orig(1,:), wc(1)]) - 10;
-max_y = max([ib5_orig(2,:), ob5_orig(2,:), wc(2)]) + 10;
-min_y = min([ib5_orig(2,:), ob5_orig(2,:), wc(2)]) - 10;
-max_z = max([ib5_orig(3,:), ob5_orig(3,:), wc(3)]) + 50;
-min_z = min([ib5_orig(3,:), ob5_orig(3,:), wc(3)]) - 50;
-
-% set up gif image array
-filename = 'vector_movement.gif';
-mov(loops) = struct('cdata', [], 'colormap', []);
-mov2(loops+1) = struct('cdata', [], 'colormap', []);
-
- for iter = 1:loops    
+ for iter = 1:loops
     %    Vx         Vy     Wx      Wy    Wz
     syms dWheelbase dTrack dCamber dSpin dToe
     
@@ -199,33 +186,7 @@ mov2(loops+1) = struct('cdata', [], 'colormap', []);
     camber_data(iter+1)     = camber_deg;
     spin_data(iter+1)       = spin_deg;
     toe_data(iter+1)        = toe_deg;
-    wc_to_cp_data(:,iter+1)       = wc_to_cp;
-    
-    % plot vectors
-    quiver3(ob5(1,:), ob5(2,:), ob5(3,:), ca5(1,:), ca5(2,:), ca5(3,:), 'AutoScale', 'off');
-    %view(90, 0)
-    hold on
-    quiver3(wc3(1,:), wc3(2,:), wc3(3,:), rad3(1,:), rad3(2,:), rad3(3,:), 'AutoScale', 'off');
-    quiver3(wc(1), wc(2), wc(3), wc_to_cp(1), wc_to_cp(2), wc_to_cp(3), 'AutoScale', 'off');
-    cp = wc + wc_to_cp;
-    quiver3(cp(1), cp(2), cp(3), cp_vel(1)*50, cp_vel(2)*50, cp_vel(3)*50, 'AutoScale', 'off');
-    quiver3(cp(1), cp(2), cp(3), cp_to_ic_right(1,iter+1)*100, cp_to_ic_right(2,iter+1)*100, cp_to_ic_right(3,iter+1)*100, 'AutoScale', 'off');
-    hold off
-    set(gca, 'DataAspectRatio', [1 1 1],...
-        'XLim', [min_x max_x],...
-        'YLim', [-50 max_y],...
-        'ZLim', [-50 max_z])
-    drawnow limitrate
-    mov(iter) = getframe;
-    
-    % make a GIF file
-    im = frame2im(mov(iter));
-    [imind, cmap] = rgb2ind(im,256);
-    if iter == 1
-        imwrite(imind, cmap, filename, 'gif', 'LoopCount', Inf, 'DelayTime', 0.1);
-    elseif mod(iter, 5) == 0
-        imwrite(imind, cmap, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0.1);
-    end
+    wc_to_cp_data(:,iter+1) = wc_to_cp;
     
     % only move wheel center and rotate radius vectors
     wc  = vpa(wc + wc_displ); % vpa( ) --> round for efficiency
@@ -238,7 +199,7 @@ mov2(loops+1) = struct('cdata', [], 'colormap', []);
     ca_data_right(7:9,iter+1)     = -ca5(:,3);
     ca_data_right(10:12,iter+1)   = -ca5(:,4);
     ca_data_right(13:15,iter+1)   = -ca5(:,5);
-    ob_to_wc_data(:,iter+1) = -rad3(:,1);
+    ob_to_wc_data(:,iter+1)       = -rad3(:,1);
     
     % calculate anti-features 
     [antidive_data(iter+1), antisquat_data(iter+1)] = anti_features(wc, wc_to_cp, ca5, ob5, CG_HEIGHT, wheelbase_mm, pfb);
@@ -271,7 +232,7 @@ fprintf('Average error in control arms: %.3fmm\n', ((norm(ca5(:,1)) - error(1))+
             (norm(ca5(:,3)) - error(3))+...
             (norm(ca5(:,4)) - error(4))+...
             (norm(ca5(:,5)) - error(5)))/5);
- 
+
 % rearranging data to go from bottom of travel to top
 antidive_data   = rearrange(antidive_data, loops);
 antisquat_data  = rearrange(antisquat_data, loops);
@@ -281,28 +242,14 @@ camber_data     = rearrange(camber_data, loops);
 toe_data        = rearrange(toe_data, loops);
 roll_data       = rearrange(roll_data, loops);
 cp_to_ic_right  = rearrange(cp_to_ic_right, loops);
-cp_to_ic_right(:,loops/2+1)     = cp_to_ic_right(:,loops/2);
-cp_to_ic_left                   = flip(cp_to_ic_right, 2);
-cp_to_ic_left(2,:)              = -1*cp_to_ic_left(2,:);
-wc_to_ic_right                  = rearrange(wc_to_ic_right, loops);
-wc_to_ic_right(:,loops/2+1)     = wc_to_ic_right(:,loops/2);
-wc_to_ic_left                   = flip(wc_to_ic_right, 2);
-wc_to_ic_left(2,:)              = -1*wc_to_ic_left(2,:);
+cp_to_ic_right(:,loops/2+1)    = cp_to_ic_right(:,loops/2);
+cp_to_ic_left                  = flip(cp_to_ic_right, 2);
+cp_to_ic_left(2,:)             = -1*cp_to_ic_left(2,:);
 ca_data_right    = rearrange(ca_data_right, loops);
 ob_to_wc_data    = rearrange(ob_to_wc_data, loops);
 wc_to_cp_data    = rearrange(wc_to_cp_data, loops);
-
-% variables for gif
-figure;
-filename2 = 'roll_center.gif';
 ca5_orig = ob5_orig - ib5_orig;
 ca_data_right(:,loops/2+1) = [ca5_orig(:,1); ca5_orig(:,2); ca5_orig(:,3); ca5_orig(:,4); ca5_orig(:,5)];
-ca_data_left = flip(ca_data_right, 2);
-ca_data_left(2,:) = -ca_data_left(2,:);
-ca_data_left(5,:) = -ca_data_left(5,:);
-ca_data_left(8,:) = -ca_data_left(8,:);
-ca_data_left(11,:) = -ca_data_left(11,:);
-ca_data_left(14,:) = -ca_data_left(14,:);
 
 % variables for roll
 wc_to_cp_data(:,loops/2+1) = ctp_orig;
@@ -350,10 +297,8 @@ for iter = loops/2+1:loops+1
         roll_data(iter) = roll_data(iter-1) + vpa(new_sol)*180/pi;
     end
 
-    %update points
-    ib5 = rc_vec5 + Rx_*rc_to_ib;
-    
-    % rotate iterations for gif
+    %update points and vectors (relative ones)
+    ib5 = rc_vec5 + Rx_*rc_to_ib; % only absolute one needs rc to not rotate
     rc_to_ib_left = ib5left - rc_vec5;
     ib5left = rc_vec5 + Rx_*rc_to_ib_left;
     ca_data_right(1:3, iter:loops+1)   = Rx_*ca_data_right(1:3, iter:loops+1);
@@ -361,51 +306,10 @@ for iter = loops/2+1:loops+1
     ca_data_right(7:9, iter:loops+1)   = Rx_*ca_data_right(7:9, iter:loops+1);
     ca_data_right(10:12, iter:loops+1) = Rx_*ca_data_right(10:12, iter:loops+1);
     ca_data_right(13:15, iter:loops+1) = Rx_*ca_data_right(13:15, iter:loops+1);
-    ca_data_left(1:3, iter:loops+1)    = Rx_*ca_data_left(1:3, iter:loops+1);
-    ca_data_left(4:6, iter:loops+1)    = Rx_*ca_data_left(4:6, iter:loops+1);
-    ca_data_left(7:9, iter:loops+1)    = Rx_*ca_data_left(7:9, iter:loops+1);
-    ca_data_left(10:12, iter:loops+1)  = Rx_*ca_data_left(10:12, iter:loops+1);
-    ca_data_left(13:15, iter:loops+1)  = Rx_*ca_data_left(13:15, iter:loops+1);
-    wc_to_cp_data(:,iter:loops+1)      = Rx_*wc_to_cp_data(:,iter:loops+1);
-    wc_to_cp_data(:,1:102-iter)        = Rx_*wc_to_cp_data(:,1:102-iter);
-    ob_to_wc_data(:,iter:loops+1)      = Rx_*ob_to_wc_data(:,iter:loops+1);
-    wc_to_ic_right(:,iter:loops+1)     = Rx_*wc_to_ic_right(:,iter:loops+1);
-    wc_to_ic_left(:,iter:loops+1)      = Rx_*wc_to_ic_left(:,iter:loops+1);
-    cp_to_ic_right(:,iter:loops+1)     = Rx_*cp_to_ic_right(:,iter:loops+1);
-    cp_to_ic_left(:,iter:loops+1)      = Rx_*cp_to_ic_left(:,iter:loops+1); 
-    
-    ca_new5 = [ca_data_right(1:3,iter), ca_data_right(4:6,iter),...
-        ca_data_right(7:9,iter), ca_data_right(10:12,iter), ca_data_right(13:15,iter)]; 
-    ca_new5_left = [ca_data_left(1:3,iter), ca_data_left(4:6,iter),...
-        ca_data_left(7:9,iter), ca_data_left(10:12,iter), ca_data_left(13:15,iter)]; 
-    
-    % visual output
-    quiver3(0,0,0, rc_vec(1), rc_vec(2), rc_vec(3), 'AutoScale', 'off', 'Color', 'g');
-    hold on
-    quiver3(0, htrack_data(iter), 0, rightVisual(1), rightVisual(2), rightVisual(3), 'AutoScale', 'off', 'Color', 'g');
-    quiver3(rc_vec5(1,:), rc_vec5(2,:), rc_vec5(3,:), rc_to_ib(1,:), rc_to_ib(2,:), rc_to_ib(3,:), 'AutoScale', 'off', 'Color', 'y');
-    quiver3(rc_vec5(1,:) + rc_to_ib(1,:), rc_vec5(2,:) + rc_to_ib(2,:), rc_vec5(3,:) + rc_to_ib(3,:), ...
-            ca_new5(1,:), ca_new5(2,:), ca_new5(3,:), 'AutoScale', 'off', 'Color', 'b');
-    quiver3(0, -1*htrack_data(iter), 0, leftVisual(1), leftVisual(2), leftVisual(3), 'AutoScale', 'off', 'Color', 'g');
-    quiver3(rc_vec5(1,:), rc_vec5(2,:), rc_vec5(3,:), rc_to_ib_left(1,:), rc_to_ib_left(2,:), rc_to_ib_left(3,:), 'AutoScale', 'off', 'Color', 'y');
-    quiver3(rc_vec5(1,:) + rc_to_ib_left(1,:), rc_vec5(2,:) + rc_to_ib_left(2,:), rc_vec5(3,:) + rc_to_ib_left(3,:), ...
-            ca_new5_left(1,:), ca_new5_left(2,:), ca_new5_left(3,:), 'AutoScale', 'off', 'Color', 'c');
-    hold off
-    view(90, 0)
-    set(gca, 'DataAspectRatio', [1 1 1],...
-        'XLim', [0 1000],...
-        'YLim', [-700 700],...
-        'ZLim', [-100 500])
-    drawnow limitrate
-    mov2(iter) = getframe;
-    % make a GIF file
-    im = frame2im(mov2(iter));
-    [imind, cmap] = rgb2ind(im,256);
-    if iter == loops/2+1
-        imwrite(imind, cmap, filename2, 'gif', 'LoopCount', Inf, 'DelayTime', 0.1);
-    elseif mod(iter, 3) == 0
-        imwrite(imind, cmap, filename2, 'gif', 'WriteMode', 'append', 'DelayTime', 0.1);
-    end
+    wc_to_cp_data(:,iter:loops+1)     = Rx_*wc_to_cp_data(:,iter:loops+1);
+    ob_to_wc_data(:,iter:loops+1)     = Rx_*ob_to_wc_data(:,iter:loops+1);
+    cp_to_ic_right(:,iter:loops+1)   = Rx_*cp_to_ic_right(:,iter:loops+1);
+    cp_to_ic_left(:,iter:loops+1)    = Rx_*cp_to_ic_left(:,iter:loops+1); 
 end
 
 roll_data(1:loops/2) = -flip(roll_data(loops/2+2:loops+1), 2); % copy negative of second half
