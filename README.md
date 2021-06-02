@@ -9,5 +9,6 @@ Then it solves a system of linear equations created by taking the dot product of
 Then it moves the points slightly, records data, draws a visual representation using quiver3, then repeats the process. 
 
 ## Current state
-Currently, the calculator can compute all the kinematic variables in simple bump or droop movements. 
-Simulating roll accurately as well as finding roll center accurately is currently being developed.
+Currently, the calculator can compute kinematic variables in simple bump or droop movements. These calculations were justified with previous ADAMS car outputs. 
+Roll center height (geometric roll center) can be calculated. Note this is one way of many to calculate roll center. The roll center output for 21R05 justified in Solidworks, within 2mm error.
+The number of iterations and time step can be adjusted.
